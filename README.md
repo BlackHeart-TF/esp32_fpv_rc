@@ -1,6 +1,9 @@
 # Low Latency Camera Streaming with UDP for ESP32-Camera
 
-OV2640搭載 Unit Cam Wi-Fi Camera向けのUDPを使った低遅延ストリーミングソフトウェアです。カメラから取得したデータを逐次を送信するため、PSRAMを持たないESP32でも高解像度（SVGA/HD）の画像を高いフレームレート（30p/15p）で低遅延でストリーミング可能です。受信側はPython+OpenCVで書いてます。
+Targetting M5 Stack and Seeed devices with OV2640. Unit Cam, Unit Cam S3, Seed Xiao S3 sense. Requires PSRAM.
+
+## COMING SOON:
+servo control: supporting M5 8servos unit or direct gpio
 
 **CIF 60p**
 
@@ -14,39 +17,44 @@ OV2640搭載 Unit Cam Wi-Fi Camera向けのUDPを使った低遅延ストリー�
 
 [![](https://img.youtube.com/vi/p_f2DVExQYw/0.jpg)](https://www.youtube.com/watch?v=p_f2DVExQYw)
 
-## 使い方（送信：esp32_sender）
+## esp32_sender
 
-ビルドにはESP-IDF 4.2が必要です。
+build with ESP-IDF 5.0
 
-### WiFi設定
-
-`Example Configuration`でSSIDとパスワードを設定してください。
+### WiFi
+The SSID and Network key must be set before compiling. You can set it with IDF or from the config directly
 
 ```
 cd esp32_sender
 idf.py menuconfig
 ```
+in sdkconfig:
+```
+CONFIG_ESP_WIFI_SSID="MyNetwork"
+CONFIG_ESP_WIFI_PASSWORD="MyKey"
+```
 
-### ビルドとフラッシュ
+### Building for ESP32
 
-ビルドしてフラッシュしてシリアル出力を確認する。
+Requires ESP-IDF and esp32_camera fragment mode: https://github.com/arms22/esp32-camera-fragment-mode
 
 ```
 cd esp32_sender
 idf.py -p PORT build flash monitor
 ```
 
-## 使い方（受信：python_receiver）
+## python_receiver
 
-### OpenCVのインストール
+### Installing requirements
 
 ```
 pip3 install --upgrade pip
 pip3 install opencv-python
 ```
 
-### 実行
-
+### Running the app
+Listen_ip is the address you want to receive the video on. You can specify 0.0.0.0 if you dont know/care.
+esp32_ip is the device, it will print it to console at boot
 ```
 python3.exe python_receiver\receiver.py <listen_ip> <esp32_ip>
 ```
