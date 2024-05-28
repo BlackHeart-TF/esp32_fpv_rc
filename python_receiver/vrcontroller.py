@@ -5,8 +5,6 @@ from OpenGL.GL import shaders
 import receiver,cv2
 import numpy as np
 
-frame_queue = queue.Queue()
-
 def set_projection(w, h):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -79,11 +77,13 @@ def update_texture(texture, frame_bytes):
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.get_width(), image.get_height(), 0, GL_RGB, GL_UNSIGNED_BYTE, pygame.image.tostring(image, "RGB", 1))
 
 def draw_box():
+    width = 4 / 3
+    height = 1.0
     glBegin(GL_QUADS)
-    glTexCoord2f(0, 0); glVertex3f(-1, -1, 0)
-    glTexCoord2f(1, 0); glVertex3f(1, -1, 0)
-    glTexCoord2f(1, 1); glVertex3f(1, 1, 0)
-    glTexCoord2f(0, 1); glVertex3f(-1, 1, 0)
+    glTexCoord2f(0, 0); glVertex3f(-width, -height, 0)
+    glTexCoord2f(1, 0); glVertex3f(width, -height, 0)
+    glTexCoord2f(1, 1); glVertex3f(width, height, 0)
+    glTexCoord2f(0, 1); glVertex3f(-width, height, 0)
     glEnd()
 
 def samplebox():
@@ -106,11 +106,11 @@ def samplebox():
             glVertex3fv(vertices[vertex])
     glEnd()
 
-if __name__ == "__main__":
+def main():
     import argparse
     parser = argparse.ArgumentParser()
     
-    parser.add_argument("target", type=str)
+    parser.add_argument("target", type=str,nargs='+')
     parser.add_argument("--listen", type=str,default="0.0.0.0")
     parser.add_argument("--fullscreen", action='store_true')
     parser.add_argument("--write", type=str)
@@ -118,8 +118,13 @@ if __name__ == "__main__":
     parser.add_argument("--grab-all", action='store_true', default=False)
     args = parser.parse_args()
 
-    thread = threading.Thread(target=receiver.udp_recv, args=(args.listen, args.target))
-    thread.start()
+    udp = receiver.udp_transitter(args.target[0],args.listen)
+    udp.Begin()
+    if len(args.target) >1:
+        udp2 = receiver.udp_transitter(args.target[1],args.listen)
+        udp2.Begin()
+    else:
+        udp2 = None
 
     pygame.init()
     display = (800, 600)
@@ -136,14 +141,19 @@ if __name__ == "__main__":
                 running = False
         
         try:
-            frame = receiver.frame_q.get(timeout=1)
+            frame = udp.frame_q.get(timeout=1)
             update_texture(texture, frame)
         except queue.Empty:
             pass
         glLoadIdentity()
-        glTranslatef(-1.0, 0.0, -4)
+        glTranslatef(0.0, 0.0, -2.5)
         #samplebox()
-        glRotatef(10, 0.1, 3, 0.1)
+        #glRotatef(10, 0.1, 3, 0.1)
         draw_box()
         pygame.display.flip()
-        pygame.time.wait(10)
+        #pygame.time.wait(10)
+    #stop the thread on exit
+    udp.running = False
+
+if __name__ == "__main__":
+    main()

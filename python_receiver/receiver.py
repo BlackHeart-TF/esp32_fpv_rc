@@ -7,67 +7,71 @@ import queue
 import time
 import traceback
 
-frame_q = queue.Queue()
-runing = True
+class udp_transitter():
+    def __init__(self,target_addr,listen_addr="0.0.0.0"):
+        self.frame_q = queue.Queue()
+        self.running = False
+        self.Address = target_addr
+        self.ListenAddress = listen_addr
 
-def udp_recv(listen_addr, target_addr):
+    def Begin(self):
+        self.running = True
+        thread = threading.Thread(target=self.udp_recv)
+        thread.start()
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(1)
-    sock.bind((listen_addr, 55556))
+    def udp_recv(self):
 
-    # rcvbuf = sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)  # 受信バッファサイズの取得
-    # print(rcvbuf)
-    # sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2*16)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(1)
+        sock.bind((self.ListenAddress, 55556))
 
-    print('Start Streaming...')
+        print('Start Streaming...')
 
-    chunks = b''
-    while runing:
-        try:
-            msg, address = sock.recvfrom(2**16)
-        except Exception as e:
-            # print('sock.recvfrom',e)
-            sock.sendto(b'\x55', (target_addr, 55555))
-            continue
-        soi = msg.find(b'\xff\xd8\xff')
-        eoi = msg.rfind(b'\xff\xd9')
-        print(time.perf_counter(), len(msg), soi, eoi, msg[:2], msg[-2:])
-        if soi >= 0:
-            if chunks.startswith(b'\xff\xd8\xff'):
-                if eoi >= 0:
-                    chunks += msg[:eoi+2]
-                    print(time.perf_counter(), "Complete picture")
-                    eoi = -1
-                else:
-                    chunks += msg[:soi]
-                    print(time.perf_counter(), "Incomplete picture")
-                try:
-                    frame_q.put(chunks, timeout=1)
-                except Exception as e:
-                    print(e)
-            chunks = msg[soi:]
-        else:
-            chunks += msg
-        if eoi >= 0:
-            eob = len(chunks) - len(msg) + eoi + 2
-            if chunks.startswith(b'\xff\xd8\xff'):
-                byte_frame = chunks[:eob]
-                print(time.perf_counter(), "Complete picture")
-                try:
-                    frame_q.put(byte_frame, timeout=1)
-                except Exception as e:
-                    print(e)
+        chunks = b''
+        while self.running:
+            try:
+                msg, address = sock.recvfrom(2**16)
+            except Exception as e:
+                # print('sock.recvfrom',e)
+                sock.sendto(b'\x55', (self.Address, 55555))
+                continue
+            soi = msg.find(b'\xff\xd8\xff')
+            eoi = msg.rfind(b'\xff\xd9')
+            print(time.perf_counter(), len(msg), soi, eoi, msg[:2], msg[-2:])
+            if soi >= 0:
+                if chunks.startswith(b'\xff\xd8\xff'):
+                    if eoi >= 0:
+                        chunks += msg[:eoi+2]
+                        print(time.perf_counter(), "Complete picture")
+                        eoi = -1
+                    else:
+                        chunks += msg[:soi]
+                        print(time.perf_counter(), "Incomplete picture")
+                    try:
+                        self.frame_q.put(chunks, timeout=1)
+                    except Exception as e:
+                        print(e)
+                chunks = msg[soi:]
             else:
-                print(time.perf_counter(), "Invalid picture")
-            chunks = chunks[eob:]
-    sock.close()
-    print('Stop Streaming')
+                chunks += msg
+            if eoi >= 0:
+                eob = len(chunks) - len(msg) + eoi + 2
+                if chunks.startswith(b'\xff\xd8\xff'):
+                    byte_frame = chunks[:eob]
+                    print(time.perf_counter(), "Complete picture")
+                    try:
+                        self.frame_q.put(byte_frame, timeout=1)
+                    except Exception as e:
+                        print(e)
+                else:
+                    print(time.perf_counter(), "Invalid picture")
+                chunks = chunks[eob:]
+        sock.close()
+        print('Stop Streaming')
 
 def main(args):
-    global runing
-
-    thread = threading.Thread(target=udp_recv, args=(args.listen, args.target))
+    udp = udp_transitter(args.target,args.listen)
+    thread = threading.Thread(target=udp.udp_recv)
     thread.start()
 
     winname = 'frame'
@@ -82,14 +86,14 @@ def main(args):
 
         try:
             if args.write:
-                if not frame_q.empty():
+                if not udp.frame_q.empty():
                     img = None
             else:
                 img = None
             if img is None:
                 while True:
-                    byte_frame = frame_q.get(block=True, timeout=1)
-                    if frame_q.empty() or args.grab_all:
+                    byte_frame = udp.frame_q.get(block=True, timeout=1)
+                    if udp.frame_q.empty() or args.grab_all:
                         break
                     print(time.perf_counter(), 'Skip picture')
                 print(time.perf_counter(), 'Decode picture')
@@ -131,7 +135,7 @@ def main(args):
     if writer:
         writer.release()
     print('Waiting for recv thread to end')
-    runing = False
+    udp.running = False
     thread.join()
     cv2.destroyAllWindows()
 
