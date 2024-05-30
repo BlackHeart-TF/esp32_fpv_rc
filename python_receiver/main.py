@@ -20,6 +20,7 @@ class MainWindow(QMainWindow):
         toplayout.addWidget(self.label,1)
         toplayout.addWidget(self.refbutton,0)
         self.listbox = QListView()
+        self.listbox.setSelectionMode(QListView.MultiSelection)
         self.model = QStringListModel()
         self.listbox.setModel(self.model)
         buttonlayout = QHBoxLayout()
@@ -56,7 +57,7 @@ class MainWindow(QMainWindow):
         if selected_items:
             python_interpreter = sys.executable
             command = [python_interpreter, "vrcontroller.py"] + selected_items
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(command)
 
 
     def update_gamepad_status(self):

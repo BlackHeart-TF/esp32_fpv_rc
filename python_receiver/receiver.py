@@ -35,6 +35,8 @@ class udp_transitter():
                 # print('sock.recvfrom',e)
                 sock.sendto(b'\x55', (self.Address, 55555))
                 continue
+            if address[0] != self.Address:
+                continue
             soi = msg.find(b'\xff\xd8\xff')
             eoi = msg.rfind(b'\xff\xd9')
             print(time.perf_counter(), len(msg), soi, eoi, msg[:2], msg[-2:])

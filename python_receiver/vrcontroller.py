@@ -1,10 +1,13 @@
 import pygame,math,queue,threading
 from pygame.locals import *
 from OpenGL.GL import *
-from OpenGL.GL import shaders
-import receiver,cv2
-import numpy as np
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+import cv2
+#import xr
 
+import numpy as np
+from lib.UDPReceiver import UDP
 def set_projection(w, h):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -22,42 +25,20 @@ def set_projection(w, h):
     glLoadMatrixf(projection_matrix)
     glMatrixMode(GL_MODELVIEW)
 
-    
+  
+# def init_vr():
+#     # Initialize OpenXR instance
+#     instanceinfo = xr.InstanceCreateInfo(application_info=xr.ApplicationInfo(application_name="FPV Viewer"))
+#     instance = xr.create_instance(instanceinfo)
+#     system = instance.system()
 
-vertices = (
-    (1, -1, 0),
-    (1, 1, 0),
-    (-1, 1, 0),
-    (-1, -1, 0),
-    (1, -1, 0.1),
-    (1, 1, 0.1),
-    (-1, -1, 0.1),
-    (-1, 1, 0.1)
-)
+#     # Create OpenXR session
+#     session = instance.create_session(system)
 
-edges = (
-    (0, 1),
-    (0, 3),
-    (0, 4),
-    (2, 1),
-    (2, 3),
-    (2, 7),
-    (6, 3),
-    (6, 4),
-    (6, 7),
-    (5, 1),
-    (5, 4),
-    (5, 7)
-)
-
-surfaces = (
-    (0, 1, 2, 3),
-    (3, 2, 7, 6),
-    (6, 7, 5, 4),
-    (4, 5, 1, 0),
-    (1, 5, 7, 2),
-    (4, 0, 3, 6)
-)
+#     # Create swapchain for rendering
+#     swapchain_format = xr.SwapchainFormat.RGBA8
+#     swapchain = session.create_swapchain(swapchain_format)
+#     return swapchain
 
 
 def load_texture():
@@ -76,35 +57,18 @@ def update_texture(texture, frame_bytes):
     image = pygame.image.frombuffer(frame.tobytes(), frame.shape[1::-1], "RGB")
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.get_width(), image.get_height(), 0, GL_RGB, GL_UNSIGNED_BYTE, pygame.image.tostring(image, "RGB", 1))
 
-def draw_box():
-    width = 4 / 3
+def draw_box(isSecond=False):
+    width = 2 * 4 / 3
     height = 1.0
+    offset = width*-1 if isSecond else 0
     glBegin(GL_QUADS)
-    glTexCoord2f(0, 0); glVertex3f(-width, -height, 0)
-    glTexCoord2f(1, 0); glVertex3f(width, -height, 0)
-    glTexCoord2f(1, 1); glVertex3f(width, height, 0)
-    glTexCoord2f(0, 1); glVertex3f(-width, height, 0)
+    glTexCoord2f(0, 0); glVertex3f(offset, -height, 0)
+    glTexCoord2f(1, 0); glVertex3f(width+offset, -height, 0)
+    glTexCoord2f(1, 1); glVertex3f(width+offset, height, 0)
+    glTexCoord2f(0, 1); glVertex3f(offset, height, 0)
     glEnd()
 
-def samplebox():
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
-    glRotatef(1, 0.1, 3, 0.1)
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glBegin(GL_QUADS)
-    for surface in surfaces:
-        for vertex in surface:
-            glColor3fv((1, 0, 0))
-            glVertex3fv(vertices[vertex])
-    glEnd()
 
-    glBegin(GL_LINES)
-    for edge in edges:
-        for vertex in edge:
-            glVertex3fv(vertices[vertex])
-    glEnd()
 
 def main():
     import argparse
@@ -118,19 +82,22 @@ def main():
     parser.add_argument("--grab-all", action='store_true', default=False)
     args = parser.parse_args()
 
-    udp = receiver.udp_transitter(args.target[0],args.listen)
-    udp.Begin()
+    UDP.Begin(args.listen)
+    udp = UDP(args.target[0])
+    udp.BeginStream()
     if len(args.target) >1:
-        udp2 = receiver.udp_transitter(args.target[1],args.listen)
-        udp2.Begin()
+        udp2 = UDP(args.target[1])
+        udp2.BeginStream()
     else:
         udp2 = None
 
     pygame.init()
-    display = (800, 600)
+    display = (1600 if udp2 else 800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
-    set_projection(display[0],display[1])
-
+    #set_projection(display[0],display[1])
+    gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
+    glTranslatef(0.0, 0.0, -5)
+    vr_system = init_vr()
     texture = load_texture()
     glEnable(GL_TEXTURE_2D)
 
@@ -141,19 +108,26 @@ def main():
                 running = False
         
         try:
-            frame = udp.frame_q.get(timeout=1)
+            frame = udp.frame_queue.get(timeout=1)
             update_texture(texture, frame)
         except queue.Empty:
             pass
         glLoadIdentity()
-        glTranslatef(0.0, 0.0, -2.5)
+        glTranslatef(0.0 if udp2 else -1.35, 0.0, -2.4)
         #samplebox()
         #glRotatef(10, 0.1, 3, 0.1)
         draw_box()
+        if udp2:
+            try:
+                frame = udp2.frame_queue.get(timeout=1)
+                update_texture(texture, frame)
+            except queue.Empty:
+                pass
+            draw_box(True)
         pygame.display.flip()
         #pygame.time.wait(10)
     #stop the thread on exit
-    udp.running = False
+    UDP.listening = False
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,4 @@
-menu "Example Configuration"
-
+menu "Camera Pin Configuration"
     config M5STACK_UNITCAM
         bool "M5Stack UnitCam"
         default n
@@ -12,6 +11,12 @@ menu "Example Configuration"
         bool "Xiao ESP32S3 Sense"
         default n
 
+    config FREENOVE_ESP32S3_CAM
+        bool "Freenove ESP32S3 Cam"
+        default n
+
+endmenu
+menu "WiFi Configuration"
     config ESP_WIFI_SSID
         string "WiFi SSID"
         default "myssid"

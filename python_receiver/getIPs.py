@@ -12,7 +12,7 @@ def getIPs(timeout=1):
 
     # Broadcast the 0x55 datagram
     sock.sendto(b'\x55', ("192.168.2.255", 55555))
-
+    sock.settimeout(2)
     # Listen for responses from multiple devices
     responses = set()
     starttime = time.time()
@@ -25,6 +25,8 @@ def getIPs(timeout=1):
                 # Log the IP address here
             #else:
                 #print(f"Ignoring further packets from {addr}")
+        except TimeoutError:
+            pass
         except KeyboardInterrupt:
             break
 
