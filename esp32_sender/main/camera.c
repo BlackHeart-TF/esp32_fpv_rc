@@ -79,23 +79,14 @@ esp_err_t init_camera(void)
     return ESP_OK;
 }
 
-#define USE_NETCONN 1
-#if USE_NETCONN
-struct netconn *camera_conn;
-struct ip_addr peer_addr;
-#else
-static int camera_sock;
-static struct sockaddr_in senderinfo;
-#endif
+
+extern struct netconn *camera_conn;
+extern struct ip_addr peer_addr;
 
 static void camera_tx(void *param)
 {
     size_t packet_max = 32768;
-#if USE_NETCONN
     struct netbuf *txbuf = netbuf_new();
-#else
-    senderinfo.sin_port = htons(55556);
-#endif
 
     uint32_t frame_count = 0;
     uint32_t frame_size_sum = 0;
@@ -103,6 +94,11 @@ static void camera_tx(void *param)
 
     while (1)
     {
+        if (peer_addr.u_addr.ip4.addr == IPADDR_ANY)
+        {
+            vTaskDelay(pdMS_TO_TICKS(50));
+            continue;
+        }
         camera_fb_t *fb = esp_camera_fb_get();
         if (!fb)
         {
@@ -123,8 +119,6 @@ static void camera_tx(void *param)
             {
                 txlen = packet_max;
             }
-
-#if USE_NETCONN
             err_t err = netbuf_ref(txbuf, &buf[send], txlen);
             if (err == ERR_OK)
             {
@@ -149,29 +143,6 @@ static void camera_tx(void *param)
                 ESP_LOGE(TAG, "netbuf_ref err %d", err);
                 break;
             }
-#else
-            int err = sendto(camera_sock, &buf[send], txlen, 0, (struct sockaddr *)&senderinfo, sizeof(senderinfo));
-            if (err < 0)
-            {
-                ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-                if (errno == ENOMEM)
-                {
-                    vTaskDelay(pdMS_TO_TICKS(10));
-                }
-                else
-                {
-                    send = total;
-                }
-            }
-            else if (err == 0)
-            {
-                vTaskDelay(pdMS_TO_TICKS(10));
-            }
-            else
-            {
-                send += err;
-            }
-#endif
         }
 
         esp_camera_fb_return(fb);
@@ -200,75 +171,48 @@ static void camera_tx(void *param)
 
 void start_camera(void)
 {
-#if USE_NETCONN
-    camera_conn = netconn_new(NETCONN_UDP);
-    if (camera_conn == NULL)
-    {
-        ESP_LOGE(TAG, "netconn_new err");
-        return;
-    }
+    // camera_conn = netconn_new(NETCONN_UDP);
+    // if (camera_conn == NULL)
+    // {
+    //     ESP_LOGE(TAG, "netconn_new err");
+    //     return;
+    // }
 
-    err_t err = netconn_bind(camera_conn, IPADDR_ANY, 55555);
-    if (err != ERR_OK)
-    {
-        ESP_LOGE(TAG, "netconn_bind err %d", err);
-        netconn_delete(camera_conn);
-        return;
-    }
+    // err_t err = netconn_bind(camera_conn, IPADDR_ANY, 55555);
+    // if (err != ERR_OK)
+    // {
+    //     ESP_LOGE(TAG, "netconn_bind err %d", err);
+    //     netconn_delete(camera_conn);
+    //     return;
+    // }
 
-    ESP_LOGI(TAG, "Wait a trigger...");
-    while (1)
-    {
-        struct netbuf *rxbuf;
-        err = netconn_recv(camera_conn, &rxbuf);
-        if (err == ERR_OK)
-        {
-            uint8_t *data;
-            u16_t len;
-            netbuf_data(rxbuf, (void **)&data, &len);
-            if (len)
-            {
-                ESP_LOGI(TAG, "netconn_recv %d", len);
-                if (data[0] == 0x55)
-                {
-                    peer_addr = *netbuf_fromaddr(rxbuf);
-                    ESP_LOGI(TAG, "peer %lx", peer_addr.u_addr.ip4.addr);
+    // ESP_LOGI(TAG, "Wait a trigger...");
+    // while (1)
+    // {
+    //     struct netbuf *rxbuf;
+    //     err = netconn_recv(camera_conn, &rxbuf);
+    //     if (err == ERR_OK)
+    //     {
+    //         uint8_t *data;
+    //         u16_t len;
+    //         netbuf_data(rxbuf, (void **)&data, &len);
+    //         if (len)
+    //         {
+    //             ESP_LOGI(TAG, "netconn_recv %d", len);
+    //             if (data[0] == 0x55)
+    //             {
+    //                 peer_addr = *netbuf_fromaddr(rxbuf);
+    //                 ESP_LOGI(TAG, "peer %lx", peer_addr.u_addr.ip4.addr);
 
-                    ESP_LOGI(TAG, "Trigged!");
-                    netbuf_delete(rxbuf);
-                    break;
-                }
-            }
-            netbuf_delete(rxbuf);
-        }
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-#else
-    camera_sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (camera_sock < 0)
-    {
-        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
-        return;
-    }
+    //                 ESP_LOGI(TAG, "Trigged!");
+    //                 netbuf_delete(rxbuf);
+    //                 break;
+    //             }
+    //         }
+    //         netbuf_delete(rxbuf);
+    //     }
+    //     vTaskDelay(pdMS_TO_TICKS(10));
+    // }
 
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(55555);
-    addr.sin_addr.s_addr = INADDR_ANY;
-    bind(camera_sock, (struct sockaddr *)&addr, sizeof(addr));
-
-    socklen_t addrlen = sizeof(senderinfo);
-    char buf[128];
-    ESP_LOGI(TAG, "Wait a trigger...");
-    while (1)
-    {
-        int n = recvfrom(camera_sock, buf, sizeof(buf) - 1, 0, (struct sockaddr *)&senderinfo, &addrlen);
-        if (n > 0 && buf[0] == 0x55)
-        {
-            break;
-        }
-        ESP_LOGI(TAG, "recvfrom %d", n);
-    }
-#endif
     xTaskCreatePinnedToCore(&camera_tx, "camera_tx", 4096, NULL, 10, NULL, tskNO_AFFINITY);
 }

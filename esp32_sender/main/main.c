@@ -137,6 +137,7 @@ void wifi_init_sta(void)
 
 esp_err_t init_camera(void);
 void start_camera(void);
+void start_listener(void);
 
 void app_main(void)
 {
@@ -153,6 +154,9 @@ void app_main(void)
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wifi_init_sta();
+
+    ESP_LOGI(TAG, "Start UDP Listener");
+    start_listener();
 
     ESP_LOGI(TAG, "Start Camera");
     start_camera();

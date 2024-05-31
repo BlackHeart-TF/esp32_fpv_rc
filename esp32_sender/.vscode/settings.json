@@ -1,3 +1,7 @@
 {
-    "idf.adapterTargetName": "esp32s3"
+    "idf.adapterTargetName": "esp32s3",
+    "files.associations": {
+        "camera_pins.h": "c",
+        "compare": "c"
+    }
 }

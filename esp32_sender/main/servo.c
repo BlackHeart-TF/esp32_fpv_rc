@@ -28,3 +28,7 @@ void threadLoop(){
     //     vTaskDelay(pdMS_TO_TICKS(10));
     // }
 }
+
+void SetServo(uint16_t valueX,uint16_t valueY){
+
+}
