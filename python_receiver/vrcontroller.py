@@ -94,10 +94,10 @@ def main():
     pygame.init()
     display = (1600 if udp2 else 800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
-    #set_projection(display[0],display[1])
-    gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
+    set_projection(display[0],display[1])
+    #gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
     glTranslatef(0.0, 0.0, -5)
-    vr_system = init_vr()
+    #vr_system = init_vr()
     texture = load_texture()
     glEnable(GL_TEXTURE_2D)
 
