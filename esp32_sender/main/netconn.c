@@ -12,6 +12,8 @@ struct ip_addr peer_addr;
 static const char *TAG = "netconn";
 bool listenerRunning = false;
 
+void SetServo(short valueX,short valueY);
+
 void stop_listener(){
     ESP_LOGI(TAG, "Ending Listener loop...");
     listenerRunning = false;
@@ -54,7 +56,7 @@ void listenThread()
                     case 0x54: //servo control first for latency
                         uint16_t valueX = (uint16_t)(data[1]) | ((uint16_t)(data[2]) << 8);
                         uint16_t valueY = (uint16_t)(data[3]) | ((uint16_t)(data[4]) << 8);
-                        //SetServo(valueX ,valueY);
+                        SetServo(valueX ,valueY);
                         break;
                     case 0x55: //start stream
                         peer_addr = *netbuf_fromaddr(rxbuf);
@@ -64,7 +66,6 @@ void listenThread()
                         break;
                     case 0x56: //stop stream
                         peer_addr.u_addr.ip4.addr = IPADDR_ANY;
-                        //SetServo(valueX ,valueY);
                         break;
                     default:
                         ESP_LOGI(TAG, "Unknown command:0x%02X", data[0]);

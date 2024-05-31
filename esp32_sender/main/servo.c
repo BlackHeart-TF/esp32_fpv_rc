@@ -1,34 +1,32 @@
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
+bool servoRunning = false;
+short servoX = 1500;
+short servoY = 1500;
+long lastAction = 0;
 
-void threadLoop(){
-    // while (1)
-    // {
-    //     struct netbuf *rxbuf;
-    //     err = netconn_recv(camera_conn, &rxbuf);
-    //     if (err == ERR_OK)
-    //     {
-    //         uint8_t *data;
-    //         u16_t len;
-    //         netbuf_data(rxbuf, (void **)&data, &len);
-    //         if (len)
-    //         {
-    //             ESP_LOGI(TAG, "netconn_recv %d", len);
-    //             if (data[0] == 0x55)
-    //             {
-    //                 peer_addr = *netbuf_fromaddr(rxbuf);
-    //                 ESP_LOGI(TAG, "peer %lx", peer_addr.u_addr.ip4.addr);
-
-    //                 ESP_LOGI(TAG, "Trigged!");
-    //                 netbuf_delete(rxbuf);
-    //                 break;
-    //             }
-    //         }
-    //         netbuf_delete(rxbuf);
-    //     }
-    //     vTaskDelay(pdMS_TO_TICKS(10));
-    // }
+void stop_servos(){
+    ESP_LOGI(TAG, "Ending servo loop...");
+    servoRunning = false;
 }
 
-void SetServo(uint16_t valueX,uint16_t valueY){
+void threadLoop(){
+    while (servoRunning){
 
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+void SetServo(short valueX,short valueY){
+    servoX = valueX;
+    servoY = valueY;
+    lastAction = esp_timer_get_time() / 1000;
+}
+
+
+void start_servos(void)
+{
+    servoRunning = true;
+    xTaskCreatePinnedToCore(&threadLoop, "servo", 4096, NULL, 10, NULL, tskNO_AFFINITY);
 }
