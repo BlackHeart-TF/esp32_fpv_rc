@@ -16,6 +16,43 @@ menu "Camera Pin Configuration"
         default n
 
 endmenu
+menu "Servo Configuration"
+    config USE_8SERVOS_UNIT
+        bool "Use M5 8Servos Unit"
+        default n
+        help
+            Use the M5Stack *Servos Unit to control the servos. (only choose 1)
+        config SCL_PIN
+            int "SCL Pin"
+            default 33
+            depends on USE_8SERVOS_UNIT
+        
+        config SDA_PIN
+            int "SDA Pin"
+            default 32  
+            depends on USE_8SERVOS_UNIT
+        
+        config SERVO_I2C_ADDR
+            int "I2C Address"
+            default 37  
+            depends on USE_8SERVOS_UNIT
+
+    config USE_GPIO_SERVO
+        bool "Use GPIO Pins"
+        default n
+        help
+            Use GPIO pins to control the servos directly, no additional hardware (only choose 1)
+        config SERVO_X_PIN
+            int "X Pin (Steering)"
+            default 33
+            depends on USE_GPIO_SERVO
+        
+        config SERVO_X_PIN
+            int "Y Pin (Throttle)"
+            default 32  
+            depends on USE_GPIO_SERVO
+
+endmenu
 menu "WiFi Configuration"
     config ESP_WIFI_SSID
         string "WiFi SSID"
@@ -34,4 +71,21 @@ menu "WiFi Configuration"
         default 5
         help
             Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
+
+    config ESP_UDP_LOG
+        bool "Log over UDP"
+        default y
+        help
+            Log to udp packets, Useful for when the usb and servo controller use the same plug. Looking at you, M5 Unit camS3.
+
+    config ESP_UDP_LOG_IP
+        string "Log to Address"
+        default "192.168.0.100"
+        depends on ESP_UDP_LOG
+
+    config ESP_UDP_LOG_PORT
+        int "Log to Port"
+        default 55557 
+        depends on ESP_UDP_LOG
 endmenu
+

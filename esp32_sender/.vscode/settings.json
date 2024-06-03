@@ -2,6 +2,10 @@
     "idf.adapterTargetName": "esp32s3",
     "files.associations": {
         "camera_pins.h": "c",
-        "compare": "c"
+        "compare": "c",
+        "limits": "c",
+        "cstdint": "c",
+        "random": "c",
+        "udp_log.h": "c"
     }
 }

@@ -4,6 +4,7 @@ Targetting M5 Stack and Seeed devices with OV2640. Unit Cam, Unit Cam S3, Seed X
 
 ## COMING SOON:
 servo control: supporting M5 8servos unit or direct gpio
+vr/ar viewer for racing rig
 
 **CIF 60p**
 
@@ -19,7 +20,10 @@ servo control: supporting M5 8servos unit or direct gpio
 
 ## esp32_sender
 
-build with ESP-IDF 5.0
+Tested with ESP-IDF 5.4.
+
+All settings can be configured through menuconfig.
+Supports Logging to UDP, can receive with `nc -u -l 55557`
 
 ### WiFi
 The SSID and Network key must be set before compiling. You can set it with IDF or from the config directly

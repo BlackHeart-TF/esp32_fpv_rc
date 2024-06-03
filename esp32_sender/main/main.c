@@ -19,6 +19,10 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
+#if CONFIG_ESP_UDP_LOG
+#include "service/udp_log.h"
+#endif
+
 /* The examples use WiFi configuration that you can set via project configuration menu
 
    If you'd rather not, just change the below entries to strings with
@@ -157,6 +161,12 @@ void app_main(void)
 
     ESP_LOGI(TAG, "Start UDP Listener");
     start_listener();
+
+#if CONFIG_ESP_UDP_LOG 
+    ESP_LOGI(TAG, "Starting UDP Logging on %s:%d",CONFIG_ESP_UDP_LOG_IP,CONFIG_ESP_UDP_LOG_PORT);
+    udp_logging_init();
+    esp_log_set_vprintf(udp_log_vprintf);
+#endif
 
     ESP_LOGI(TAG, "Start Camera");
     start_camera();
