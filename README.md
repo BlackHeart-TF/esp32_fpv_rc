@@ -3,7 +3,7 @@
 Targetting M5 Stack and Seeed devices with OV2640. Unit Cam, Unit Cam S3, Seed Xiao S3 sense. Requires PSRAM.
 
 ## COMING SOON:
-servo control: supporting M5 8servos unit or direct gpio
+servo control: supporting M5 8servos unit or direct gpio  
 vr/ar viewer for racing rig
 
 **CIF 60p**
@@ -22,8 +22,8 @@ vr/ar viewer for racing rig
 
 Tested with ESP-IDF 5.4.
 
-All settings can be configured through menuconfig.
-Supports Logging to UDP, can receive with `nc -u -l 55557`
+All settings can be configured through menuconfig.  
+Supports Logging to UDP, can receive with `nc -u -l 55557` if ESP_UDP_LOG is enabled
 
 ### WiFi
 The SSID and Network key must be set before compiling. You can set it with IDF or from the config directly
@@ -52,13 +52,43 @@ idf.py -p PORT build flash monitor
 ### Installing requirements
 
 ```
-pip3 install --upgrade pip
-pip3 install opencv-python
+pip3 install -r ./python_receiver/requirements.txt
 ```
 
 ### Running the app
-Listen_ip is the address you want to receive the video on. You can specify 0.0.0.0 if you dont know/care.
-esp32_ip is the device, it will print it to console at boot
+The easiest way to conenct is with the scanning and launching script 'main.py'. This file will broadcast for any running cameras and list the IP addresses. You can select 1-2 cameras and pass them to the QT or GL viewers.
 ```
-python3.exe python_receiver\receiver.py <listen_ip> <esp32_ip>
+python3 python_receiver/main.py
 ```
+
+Yuu can also launch a viewer directly by specifying the addresses
+```
+python3.exe python_receiver/qtcontroller.py <esp32_ip>
+```
+For the VR/OpenGL viewer: (work in progress)
+```
+python3.exe python_receiver/vrcontroller.py <esp32_ip_1> <esp32_ip_2:optional>
+```
+
+## Project Status
+### esp32_sender
+#### Working
+- Send camera stream with very low latency.
+- Redirect logs to UDP
+#### Issues
+- Servo Control not fully implemented
+
+### QT Viewer
+#### Working
+- receives low latency camera
+#### Issues
+- does not send control info
+
+### GL Viewer
+#### Working
+- receives low latency camera
+- receives second camera
+#### Issues
+- second camera not drawing fast enough
+- coded like a wild monkey did it
+- does not send control info
