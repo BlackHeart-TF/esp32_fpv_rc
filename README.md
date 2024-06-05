@@ -2,10 +2,12 @@
 
 Targetting M5 Stack and Seeed devices with OV2640. Unit Cam, Unit Cam S3, Seed Xiao S3 sense. Requires PSRAM.
 
-## COMING SOON:
+### COMING SOON:
 servo control: supporting M5 8servos unit or direct gpio  
 vr/ar viewer for racing rig
 
+
+## Samples:
 **CIF 60p**
 
 [![](https://img.youtube.com/vi/SjpbKLbRCOo/0.jpg)](https://www.youtube.com/watch?v=SjpbKLbRCOo)

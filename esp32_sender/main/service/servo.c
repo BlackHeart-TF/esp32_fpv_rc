@@ -5,7 +5,7 @@
 
 #if CONFIG_USE_8SERVOS_UNIT
     #include "driver/8servos_unit.h"
-    8ServosUnit unit_8servo(I2C_MASTER_NUM);
+    EightServosUnit* servoController;
 #else
     
 #endif
@@ -41,14 +41,15 @@ void SetServo(short valueX,short valueY){
 
 void commit_servos(){
 #if CONFIG_USE_8SERVOS_UNIT
-    unit_8servo.setServoPosition(0,servoX);
-    unit_8servo.setServoPosition(1,servoY);
+    setServoPosition(servoController,0,servoX);
+    setServoPosition(servoController,1,servoY);
 #else
 
 #endif
 }
 
 void threadLoop(){
+    ESP_LOGI(TAG, "Servo thread running...");
     while (servoRunning){
         long curtime = esp_timer_get_time() / 1000;
         if(curtime -lastAction > IDLE_TIMEOUT)
@@ -64,5 +65,8 @@ void threadLoop(){
 void start_servos(void)
 {
     servoRunning = true;
+#if CONFIG_USE_8SERVOS_UNIT
+    servoController = eightServosUnitCreate(I2C_MASTER_NUM);
+#endif
     xTaskCreatePinnedToCore(&threadLoop, "servo", 4096, NULL, 10, NULL, tskNO_AFFINITY);
 }

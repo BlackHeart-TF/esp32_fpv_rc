@@ -142,6 +142,7 @@ void wifi_init_sta(void)
 esp_err_t init_camera(void);
 void start_camera(void);
 void start_listener(void);
+void start_servos(void);
 
 void app_main(void)
 {
@@ -166,6 +167,12 @@ void app_main(void)
     ESP_LOGI(TAG, "Starting UDP Logging on %s:%d",CONFIG_ESP_UDP_LOG_IP,CONFIG_ESP_UDP_LOG_PORT);
     udp_logging_init();
     esp_log_set_vprintf(udp_log_vprintf);
+    ESP_LOGI(TAG, "Starting UDP Logging on %s:%d",CONFIG_ESP_UDP_LOG_IP,CONFIG_ESP_UDP_LOG_PORT);
+#endif
+
+#if CONFIG_USE_8SERVOS_UNIT
+    ESP_LOGI(TAG, "Starting Servo Controller");
+    start_servos();
 #endif
 
     ESP_LOGI(TAG, "Start Camera");
