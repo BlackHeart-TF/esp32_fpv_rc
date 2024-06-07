@@ -6,6 +6,17 @@
         "limits": "c",
         "cstdint": "c",
         "random": "c",
-        "udp_log.h": "c"
-    }
+        "udp_log.h": "c",
+        "cstdlib": "c",
+        "optional": "cpp",
+        "system_error": "cpp",
+        "array": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
+    },
+    "idf.port": "/dev/ttyACM0"
 }

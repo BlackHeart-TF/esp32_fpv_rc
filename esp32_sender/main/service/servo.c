@@ -2,9 +2,9 @@
 #include "freertos/task.h"
 #include "esp_timer.h"
 #include <esp_log.h>
-
+#include "driver/m58servos_unit.h"
 #if CONFIG_USE_8SERVOS_UNIT
-    #include "driver/8servos_unit.h"
+    #include "driver/m58servos_unit.h"
     EightServosUnit* servoController;
 #else
     
@@ -41,8 +41,8 @@ void SetServo(short valueX,short valueY){
 
 void commit_servos(){
 #if CONFIG_USE_8SERVOS_UNIT
-    setServoPosition(servoController,0,servoX);
-    setServoPosition(servoController,1,servoY);
+    setServoPulse(servoController,0,servoX);
+    setServoPulse(servoController,1,servoY);
 #else
 
 #endif
@@ -50,6 +50,8 @@ void commit_servos(){
 
 void threadLoop(){
     ESP_LOGI(TAG, "Servo thread running...");
+    SetMode(servoController,0,smServo);
+    SetMode(servoController,1,smServo);
     while (servoRunning){
         long curtime = esp_timer_get_time() / 1000;
         if(curtime -lastAction > IDLE_TIMEOUT)
@@ -60,13 +62,15 @@ void threadLoop(){
 }
 
 
-
-
 void start_servos(void)
 {
     servoRunning = true;
 #if CONFIG_USE_8SERVOS_UNIT
-    servoController = eightServosUnitCreate(I2C_MASTER_NUM);
+    servoController = eightServosUnitCreate(I2C_NUM_0,0x25);
+    if ((int)servoController <= 0){
+        ESP_LOGE(TAG, "Failed to create servo controller: %d",(int)servoController);
+        return;
+    }
 #endif
     xTaskCreatePinnedToCore(&threadLoop, "servo", 4096, NULL, 10, NULL, tskNO_AFFINITY);
 }

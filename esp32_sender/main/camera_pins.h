@@ -74,4 +74,57 @@
 #define VSYNC_GPIO_NUM 6
 #define HREF_GPIO_NUM 7
 #define PCLK_GPIO_NUM 13
+
+# has ifs on everything so you can override a preset by leaving the rest blank
+#elif defined(CONFIG_CUSTOM_CAMERA_PINS)
+#if defined(CONFIG_PWDN_GPIO_NUM)
+    #define PWDN_GPIO_NUM CONFIG_PWDN_GPIO_NUM
+#endif
+#if defined(CONFIG_RESET_GPIO_NUM)
+    #define RESET_GPIO_NUM CONFIG_RESET_GPIO_NUM
+#endif
+#if defined(CONFIG_XCLK_GPIO_NUM)
+    #define XCLK_GPIO_NUM CONFIG_XCLK_GPIO_NUM
+#endif
+#if defined(CONFIG_SIOD_GPIO_NUM)
+    #define SIOD_GPIO_NUM CONFIG_SIOD_GPIO_NUM
+#endif
+#if defined(CONFIG_SIOC_GPIO_NUM)
+    #define SIOC_GPIO_NUM CONFIG_SIOC_GPIO_NUM
+#endif
+
+#if defined(CONFIG_Y2_GPIO_NUM)
+    #define Y2_GPIO_NUM CONFIG_Y2_GPIO_NUM
+#endif
+#if defined(CONFIG_Y3_GPIO_NUM)
+    #define Y3_GPIO_NUM CONFIG_Y3_GPIO_NUM
+#endif
+#if defined(CONFIG_Y4_GPIO_NUM)
+    #define Y4_GPIO_NUM CONFIG_Y4_GPIO_NUM
+#endif
+#if defined(CONFIG_Y5_GPIO_NUM)
+    #define Y5_GPIO_NUM CONFIG_Y5_GPIO_NUM
+#endif
+#if defined(CONFIG_Y6_GPIO_NUM)
+    #define Y6_GPIO_NUM CONFIG_Y6_GPIO_NUM
+#endif
+#if defined(CONFIG_Y7_GPIO_NUM)
+    #define Y7_GPIO_NUM CONFIG_Y7_GPIO_NUM
+#endif
+#if defined(CONFIG_Y8_GPIO_NUM)
+    #define Y8_GPIO_NUM CONFIG_Y8_GPIO_NUM
+#endif
+#if defined(CONFIG_Y9_GPIO_NUM)
+    #define Y9_GPIO_NUM CONFIG_Y9_GPIO_NUM
+#endif
+
+#if defined(CONFIG_VSYNC_GPIO_NUM)
+    #define VSYNC_GPIO_NUM CONFIG_VSYNC_GPIO_NUM
+#endif
+#if defined(CONFIG_HREF_GPIO_NUM)
+    #define HREF_GPIO_NUM CONFIG_HREF_GPIO_NUM
+#endif
+#if defined(CONFIG_PCLK_GPIO_NUM)
+    #define PCLK_GPIO_NUM CONFIG_PCLK_GPIO_NUM
+#endif
 #endif

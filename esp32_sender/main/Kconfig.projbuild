@@ -15,6 +15,93 @@ menu "Camera Pin Configuration"
         bool "Freenove ESP32S3 Cam"
         default n
 
+    config CUSTOM_CAMERA_PINS
+        bool "Custom Pin Configuration"
+        default n
+
+    config PWDN_GPIO_NUM
+        int "PWDN_GPIO_NUM"
+        default -1
+        depends on CUSTOM_CAMERA_PINS
+
+    config RESET_GPIO_NUM
+        int "RESET_GPIO_NUM"
+        default -1
+        depends on CUSTOM_CAMERA_PINS
+
+    config XCLK_GPIO_NUM
+        int "XCLK_GPIO_NUM"
+        default 15
+        depends on CUSTOM_CAMERA_PINS
+
+    config SIOD_GPIO_NUM
+        int "SIOD_GPIO_NUM"
+        default 4
+        depends on CUSTOM_CAMERA_PINS
+
+    config SIOC_GPIO_NUM
+        int "SIOC_GPIO_NUM"
+        default 5
+        depends on CUSTOM_CAMERA_PINS
+
+
+    config Y2_GPIO_NUM
+        int "Y2_GPIO_NUM"
+        default 11
+        depends on CUSTOM_CAMERA_PINS
+
+    config Y3_GPIO_NUM
+        int "Y3_GPIO_NUM"
+        default 9
+        depends on CUSTOM_CAMERA_PINS
+
+    config Y4_GPIO_NUM
+        int "Y4_GPIO_NUM"
+        default 8
+        depends on CUSTOM_CAMERA_PINS
+
+    config Y5_GPIO_NUM
+        int "Y5_GPIO_NUM"
+        default 10
+        depends on CUSTOM_CAMERA_PINS
+
+    config Y6_GPIO_NUM
+        int "Y6_GPIO_NUM"
+        default 12
+        depends on CUSTOM_CAMERA_PINS
+
+    config Y7_GPIO_NUM
+        int "Y7_GPIO_NUM"
+        default 18
+        depends on CUSTOM_CAMERA_PINS
+
+    config Y8_GPIO_NUM
+        int "Y8_GPIO_NUM"
+        default 17
+        depends on CUSTOM_CAMERA_PINS
+
+    config Y9_GPIO_NUM
+        int "Y9_GPIO_NUM"
+        default 16
+        depends on CUSTOM_CAMERA_PINS
+
+
+    config VSYNC_GPIO_NUM
+        int "VSYNC_GPIO_NUM"
+        default 6
+        depends on CUSTOM_CAMERA_PINS
+
+    config HREF_GPIO_NUM
+        int "HREF_GPIO_NUM"
+        default 7
+        depends on CUSTOM_CAMERA_PINS
+
+    config PCLK_GPIO_NUM
+        int "PCLK_GPIO_NUM"
+        default 13
+        depends on CUSTOM_CAMERA_PINS
+
+
 endmenu
 menu "Servo Configuration"
     config USE_8SERVOS_UNIT
