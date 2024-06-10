@@ -11,7 +11,7 @@ def getIPs(timeout=1):
     sock.bind(("0.0.0.0", 55556))
 
     # Broadcast the 0x55 datagram
-    sock.sendto(b'\x55', ("192.168.2.255", 55555))
+    sock.sendto(b'\x55', ("192.168.0.255", 55555))
     sock.settimeout(2)
     # Listen for responses from multiple devices
     responses = set()

@@ -6,6 +6,7 @@ import time
 class UDP():
     frame_queues = {}
     listening = False
+    sendsock = None
 
     @classmethod
     def Begin(cls,ListenAddress="0.0.0.0"):
@@ -82,6 +83,11 @@ class UDP():
     def BeginStream(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.sendto(b'\x55', (self.target_addr, 55555))
+
+    def SendCommand(self,bytes):
+        if not UDP.sendsock:
+            UDP.sendsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        UDP.sendsock.sendto(bytes, (self.target_addr, 55555))
 
     def EndStream(self):
         if self.target_addr in UDP.frame_queues:

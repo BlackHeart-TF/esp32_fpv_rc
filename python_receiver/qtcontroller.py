@@ -2,7 +2,8 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import Qt, QTimer
-import pygame,threading,receiver
+import pygame,threading,receiver,struct
+from pygame.joystick import Joystick
 from queue import Queue
 from lib.UDPReceiver import UDP
 
@@ -29,26 +30,56 @@ class QtController(QMainWindow):
 
         pygame.init()
         pygame.joystick.init()
-        self.joystick = pygame.joystick.Joystick(0)
-        self.joystick.init()
+        self.joystick_count = pygame.joystick.get_count()
+        self.joysticks = [Joystick(x) for x in range(self.joystick_count)]
+        self.previous_input = {}
 
-        self.thread = None
+        self.screentimer = QTimer()
+        self.screentimer.timeout.connect(self.new_update_frame)
+        self.screentimer.start(5)  # Update frame every 5 milliseconds
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.new_update_frame)
-        self.timer.start(5)  # Update frame every 50 milliseconds
+        self.joytimer = QTimer()
+        self.joytimer.timeout.connect(self.updateInput)
+        self.joytimer.start(5)  # Update frame every 5 milliseconds
 
     def showEvent(self,event):
         super().showEvent(event)
         if not self.udp.listening:
             self.udp.Begin()
 
-    def update_frame(self):
-        if not self.udp.frame_q.empty():
-            frame = self.udp.frame_q.get(timeout=1)
-            image = QImage.fromData(frame)
-            pixmap = QPixmap.fromImage(image)
-            self.image_label.setPixmap(pixmap)
+    def updateInput(self):
+        if not self.joysticks:
+            return
+        for joystick in self.joysticks:
+            current_input = self.get_current_input(joystick)
+
+            if not self.previous_input or current_input!= self.previous_input:
+                self.previous_input = current_input
+                self.send_input(current_input)
+
+    def get_current_input(self,joystick:Joystick):
+        axiscount = joystick.get_numaxes()
+        LstickX = joystick.get_axis(0)
+        #RStickX = joystick.get_axis(3)
+        Ltrigger = joystick.get_axis(2)
+        Rtrigger = joystick.get_axis(5)
+        
+        # Scale the axis values to the range 1000-2000
+        LstickX_scaled = int((LstickX + 1) * 500+1000)  # Map -1 to 1 to 1000-2000
+    
+        # Calculate the throttle/break axis value, negating each other
+        throttle_break = ((1+Rtrigger) - (1+Ltrigger))/2
+        throttle_break_scaled = int((throttle_break + 1) * 500+1000)
+        print(f"lx:{LstickX} lt:{Ltrigger} rt:{Rtrigger} thr:{throttle_break} thsc:{throttle_break_scaled}")
+        # Pack the scaled value into a little endian byte array
+        byte_array = struct.pack('<h', throttle_break_scaled)
+        # Pack the scaled values into a little endian byte array
+        byte_array = struct.pack('<hh', LstickX_scaled, throttle_break_scaled)
+        
+        return byte_array
+
+    def send_input(self,input):
+        self.udp.SendCommand(b'\x54'+input)
 
     def new_update_frame(self):
         if not self.udp.frame_queue.empty():
@@ -66,6 +97,8 @@ class QtController(QMainWindow):
         self.udp.EndStream()
         if len(UDP.frame_queues) <= 0:
             UDP.listening = False
+        self.joytimer.stop()
+        self.screentimer.stop()
         super().closeEvent(event)
 
 if __name__ == "__main__":
