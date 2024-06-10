@@ -50,6 +50,7 @@ class QtController(QMainWindow):
     def updateInput(self):
         if not self.joysticks:
             return
+        pygame.event.pump()
         for joystick in self.joysticks:
             current_input = self.get_current_input(joystick)
 
