@@ -1,4 +1,12 @@
 menu "Camera Pin Configuration"
+    config CAMERA_MIRROR
+        bool "H-Mirror Camera"
+        default y
+
+    config CAMERA_FLIP
+        bool "V-Flip Camera"
+        default y
+        
     config M5STACK_UNITCAM
         bool "M5Stack UnitCam"
         default n

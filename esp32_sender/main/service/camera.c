@@ -18,6 +18,9 @@
 #define portTICK_RATE_MS portTICK_PERIOD_MS
 #endif
 
+#define CAMERA_FLIP CONFIG_CAMERA_FLIP
+#define CAMERA_MIRROR CONFIG_CAMERA_MIRROR
+
 #include "esp_camera.h"
 #include "camera_pins.h"
 
@@ -57,6 +60,7 @@ esp_err_t init_camera(void)
     // config.grab_mode = CAMERA_GRAB_LATEST;
     config.fragment_mode = true;
     config.zero_padding = false;
+    
 
     // camera init
     esp_err_t err = esp_camera_init(&config);
@@ -76,6 +80,8 @@ esp_err_t init_camera(void)
     // s->set_framesize(s, FRAMESIZE_HD);
     // s->set_framesize(s, FRAMESIZE_SXGA);
 
+    s->set_hmirror(s, CAMERA_MIRROR);
+    s->set_vflip(s, CAMERA_FLIP);
     return ESP_OK;
 }
 
