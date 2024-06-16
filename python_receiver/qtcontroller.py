@@ -84,9 +84,6 @@ class QtController(QMainWindow):
     def send_input(self,input):
         self.udp.SendCommand(b'\x54'+input)
 
-    # def showEvent(self,sevent):
-    #     super().showEvent(event)
-
     def showEvent(self,event):
         super().showEvent(event)
         self.label_width = 640
@@ -99,12 +96,15 @@ class QtController(QMainWindow):
         
 
     def new_update_frame(self):
-        frame = self.udp.frame_queue.get(timeout=1)
-        if frame:
+        try:
+            frame = self.udp.frame_queue.get(timeout=1)
             image = QImage.fromData(frame)
             image =image.scaled(self.label_width, self.label_height, Qt.KeepAspectRatio,Qt.FastTransformation)
             pixmap = QPixmap.fromImage(image)
             self.image_label.setPixmap(pixmap)
+        except Exception:
+            print("No Frames, Camera lost?")
+            pass
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
