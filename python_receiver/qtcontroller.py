@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,QSizePolicy
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import Qt, QTimer
 import pygame,threading,receiver,struct
@@ -16,14 +16,16 @@ class QtController(QMainWindow):
         UDP.Begin()
         self.udp = UDP(self.targetIP)
         self.udp.BeginStream()
-        
+        self.label_width = 640
+        self.label_height = 480
         self.setWindowTitle("QT Viewer")
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
         self.image_label = QLabel(self)
+        self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.image_label.setAlignment(Qt.AlignCenter)
-
+        
         self.clayout = QVBoxLayout()
         self.clayout.addWidget(self.image_label)
         self.central_widget.setLayout(self.clayout)
@@ -54,9 +56,9 @@ class QtController(QMainWindow):
         for joystick in self.joysticks:
             current_input = self.get_current_input(joystick)
 
-            if not self.previous_input or current_input!= self.previous_input:
-                self.previous_input = current_input
-                self.send_input(current_input)
+            # if not self.previous_input or current_input!= self.previous_input:
+            #     self.previous_input = current_input
+            self.send_input(current_input)
 
     def get_current_input(self,joystick:Joystick):
         axiscount = joystick.get_numaxes()
@@ -71,7 +73,7 @@ class QtController(QMainWindow):
         # Calculate the throttle/break axis value, negating each other
         throttle_break = ((1+Rtrigger) - (1+Ltrigger))/2
         throttle_break_scaled = int((throttle_break + 1) * 500+1000)
-        print(f"lx:{LstickX} lt:{Ltrigger} rt:{Rtrigger} thr:{throttle_break} thsc:{throttle_break_scaled}")
+        #print(f"lx:{LstickX} lt:{Ltrigger} rt:{Rtrigger} thr:{throttle_break} thsc:{throttle_break_scaled}")
         # Pack the scaled value into a little endian byte array
         byte_array = struct.pack('<h', throttle_break_scaled)
         # Pack the scaled values into a little endian byte array
@@ -82,10 +84,25 @@ class QtController(QMainWindow):
     def send_input(self,input):
         self.udp.SendCommand(b'\x54'+input)
 
+    # def showEvent(self,sevent):
+    #     super().showEvent(event)
+
+    def showEvent(self,event):
+        super().showEvent(event)
+        self.label_width = 640
+        self.label_height = 480
+
+    def resizeEvent(self,event):
+        super().resizeEvent(event)
+        self.label_width = self.image_label.width()
+        self.label_height = self.image_label.height()
+        
+
     def new_update_frame(self):
-        if not self.udp.frame_queue.empty():
-            frame = self.udp.frame_queue.get(timeout=1)
+        frame = self.udp.frame_queue.get(timeout=1)
+        if frame:
             image = QImage.fromData(frame)
+            image =image.scaled(self.label_width, self.label_height, Qt.KeepAspectRatio,Qt.FastTransformation)
             pixmap = QPixmap.fromImage(image)
             self.image_label.setPixmap(pixmap)
 
@@ -106,8 +123,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
 
-    window = QtController("192.168.2.206")
+    window = QtController("192.168.0.64")
     window.show()
     exitc = app.exec()
     
-    sys.exit(app.exec())
+    sys.exit(exitc)

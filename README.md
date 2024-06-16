@@ -1,9 +1,11 @@
 # Low Latency Camera Streaming with UDP for ESP32-Camera
 
-Targetting M5 Stack and Seeed devices with OV2640. Unit Cam, Unit Cam S3, Seed Xiao S3 sense. Requires PSRAM.
+Targetting M5 Stack Unit Cam S3, should work on any S3 with OV2640. Requires PSRAM.
+M8 8Servo controller supported!
+Modules can be run separately! you can use camera and no servos, or servos and no camera.
 
 ### COMING SOON:
-servo control: supporting M5 8servos unit or direct gpio  
+servo control with direct gpio  
 vr/ar viewer for racing rig
 
 

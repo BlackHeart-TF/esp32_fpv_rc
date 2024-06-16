@@ -32,16 +32,16 @@ class UDP():
                 continue # if we arent registered for them, dont waste time on it
             soi = data.find(b'\xff\xd8\xff')
             eoi = data.rfind(b'\xff\xd9')
-            print(time.perf_counter(), len(data), soi, eoi, data[:2], data[-2:])
+            #print(time.perf_counter(), len(data), soi, eoi, data[:2], data[-2:])
             if soi >= 0:
                 if chunks.startswith(b'\xff\xd8\xff'):
                     if eoi >= 0:
                         chunks += data[:eoi+2]
-                        print(time.perf_counter(), "Complete picture")
+                        #print(time.perf_counter(), "Complete picture")
                         eoi = -1
                     else:
                         chunks += data[:soi]
-                        print(time.perf_counter(), "Incomplete picture")
+                        #print(time.perf_counter(), "Incomplete picture")
                     try:
                         cls.frame_queues[addr].put(chunks, timeout=1)
                         #self.frame_q.put(chunks, timeout=1)
@@ -54,7 +54,7 @@ class UDP():
                 eob = len(chunks) - len(data) + eoi + 2
                 if chunks.startswith(b'\xff\xd8\xff'):
                     byte_frame = chunks[:eob]
-                    print(time.perf_counter(), "Complete picture")
+                    #print(time.perf_counter(), "Complete picture")
                     try:
                         cls.frame_queues[addr].put(byte_frame, timeout=1)
                         #self.frame_q.put(byte_frame, timeout=1)
