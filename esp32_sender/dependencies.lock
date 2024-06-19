@@ -10,6 +10,12 @@ dependencies:
     source:
       type: idf
     version: 5.4.0
-manifest_hash: f8afc86408216a00cf2c23b8a2d4656bd4ccd25f7d6b64ae0efc13ca4032baab
+  jackhuang021/esp32-wifi-manager:
+    component_hash: ecd9da33a6e0617d6f06fef763def81349c32cca9fdf117aa0b9cf917d50796f
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 0.0.2
+manifest_hash: fa2092285d13ed89839252b89cf10c59a2fab0556f75dad1c14ef21faffa0784
 target: esp32s3
 version: 1.0.0
