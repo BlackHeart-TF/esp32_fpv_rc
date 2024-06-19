@@ -50,12 +50,16 @@ void commit_servos(){
 
 void threadLoop(){
     ESP_LOGI(TAG, "Servo thread running...");
+    #if CONFIG_USE_8SERVOS_UNIT
     SetMode(servoController,0,smServo);
     SetMode(servoController,1,smServo);
+    #endif
     while (servoRunning){
         long curtime = esp_timer_get_time() / 1000;
+        #if CONFIG_USE_8SERVOS_UNIT
         if(curtime -lastAction > IDLE_TIMEOUT)
             SetServo((short)1500,(short)1500);
+        #endif
         commit_servos();
         vTaskDelay(pdMS_TO_TICKS(10));
     }
@@ -71,6 +75,7 @@ void start_servos(void)
         ESP_LOGE(TAG, "Failed to create servo controller: %d",(int)servoController);
         return;
     }
-#endif
+
     xTaskCreatePinnedToCore(&threadLoop, "servo", 4096, NULL, 10, NULL, tskNO_AFFINITY);
+#endif
 }

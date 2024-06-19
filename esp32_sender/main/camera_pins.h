@@ -75,7 +75,7 @@
 #define HREF_GPIO_NUM 7
 #define PCLK_GPIO_NUM 13
 
-# has ifs on everything so you can override a preset by leaving the rest blank
+// has ifs on everything so you can override a preset by leaving the rest blank
 #elif defined(CONFIG_CUSTOM_CAMERA_PINS)
 #if defined(CONFIG_PWDN_GPIO_NUM)
     #define PWDN_GPIO_NUM CONFIG_PWDN_GPIO_NUM

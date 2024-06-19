@@ -1,8 +1,24 @@
-import socket,time
+import socket,time,psutil,ipaddress
 
+
+def get_broadcast_address():
+    net_if_addrs = psutil.net_if_addrs()
+    
+    for interface_name, addresses in net_if_addrs.items():
+        if interface_name == "lo":
+            continue  # Skip localhost
+        
+        for addr in addresses:
+            if addr.family == 2: #AF_INET
+                ip = addr.address
+                netmask = addr.netmask
+                network = ipaddress.IPv4Network(f"{ip}/{netmask}", strict=False)
+                return str(network.broadcast_address), ip, interface_name
+
+    raise ValueError("No suitable network interface found")
 
 responses = None
-def getIPs(timeout=1):
+def getIPs(broadcast_addr,timeout=1):
     global responses
     # Create a UDP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -11,7 +27,7 @@ def getIPs(timeout=1):
     sock.bind(("0.0.0.0", 55556))
 
     # Broadcast the 0x55 datagram
-    sock.sendto(b'\x55', ("192.168.0.255", 55555))
+    sock.sendto(b'\x55', (broadcast_addr, 55555))
     sock.settimeout(2)
     # Listen for responses from multiple devices
     responses = set()

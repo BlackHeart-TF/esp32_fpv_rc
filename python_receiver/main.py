@@ -37,7 +37,8 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.mlayout)
 
     def ref_clicked(self):
-        ips = getIPs.getIPs()
+        addr = getIPs.get_broadcast_address()
+        ips = getIPs.getIPs(addr[0])
         if ips:
             self.model.setStringList(ips)
 
@@ -70,7 +71,8 @@ class MainWindow(QMainWindow):
         self.label.setText(status_text)
     
     def showEvent(self,event):
-        ips = getIPs.getIPs()
+        addr = getIPs.get_broadcast_address()
+        ips = getIPs.getIPs(addr[0])
         if ips:
             self.model.setStringList(ips)
 

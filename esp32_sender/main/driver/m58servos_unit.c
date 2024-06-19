@@ -1,6 +1,7 @@
 
 #include <esp_log.h>
 #include "m58servos_unit.h"
+#if CONFIG_USE_8SERVOS_UNIT
 #define I2C_MASTER_SCL_IO    CONFIG_SCL_PIN    // GPIO number for I2C master clock
 #define I2C_MASTER_SDA_IO    CONFIG_SDA_PIN    // GPIO number for I2C master data
 #define I2C_MASTER_NUM       I2C_NUM_0 // I2C port number for master dev
@@ -146,3 +147,4 @@ esp_err_t setServoPulse(EightServosUnit* unit, uint8_t port,uint16_t position) {
     i2c_cmd_link_delete(cmd_handle);
     return ret;
 }
+#endif //CONFIG_USE_8SERVOS_UNIT
