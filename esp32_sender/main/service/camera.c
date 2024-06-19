@@ -18,8 +18,16 @@
 #define portTICK_RATE_MS portTICK_PERIOD_MS
 #endif
 
+#ifdef CONFIG_CAMERA_FLIP
 #define CAMERA_FLIP CONFIG_CAMERA_FLIP
+#else
+#define CAMERA_FLIP false
+#endif
+#ifdef CONFIG_CAMERA_MIRROR
 #define CAMERA_MIRROR CONFIG_CAMERA_MIRROR
+#else
+#define CAMERA_MIRROR false
+#endif
 
 #include "esp_camera.h"
 #include "camera_pins.h"
