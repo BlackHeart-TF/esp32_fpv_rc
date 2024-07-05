@@ -9,6 +9,8 @@
 
 struct netconn *camera_conn;
 struct ip_addr peer_addr;
+uint16_t peer_port;
+
 static const char *TAG = "netconn";
 bool listenerRunning = false;
 
@@ -38,6 +40,8 @@ void listenThread()
         stop_listener();
         return;
     }
+    struct ip_addr temp_addr;
+    uint16_t temp_port;
 
     while (listenerRunning)
     {
@@ -58,14 +62,24 @@ void listenThread()
                         uint16_t valueY = (uint16_t)(data[3]) | ((uint16_t)(data[4]) << 8);
                         SetServo(valueX ,valueY);
                         break;
-                    case 0x55: //start stream
-                        peer_addr = *netbuf_fromaddr(rxbuf);
-                        ESP_LOGI(TAG, "peer %lx", peer_addr.u_addr.ip4.addr);
-
-                        ESP_LOGI(TAG, "Trigged!");
+                    case 0x55: //Client Detection
+                        temp_addr = *netbuf_fromaddr(rxbuf);
+                        temp_port = netbuf_fromport(rxbuf);
+                        ESP_LOGI(TAG, "Got Client: %lx : %d", peer_addr.u_addr.ip4.addr,peer_port);
                         break;
                     case 0x56: //stop stream
                         peer_addr.u_addr.ip4.addr = IPADDR_ANY;
+                        peer_port = 0;
+                        break;
+                    case 0x57: //start stream
+                        struct ip_addr temp2_addr = *netbuf_fromaddr(rxbuf);
+                        uint16_t temp2_port = netbuf_fromport(rxbuf);
+                        
+                        if (temp2_addr.u_addr.ip4.addr == temp_addr.u_addr.ip4.addr )
+                        {
+                            peer_addr = temp2_addr;
+                            peer_port = temp2_port;
+                        }
                         break;
                     default:
                         ESP_LOGI(TAG, "Unknown command:0x%02X", data[0]);
