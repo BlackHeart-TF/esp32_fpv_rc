@@ -83,6 +83,7 @@ class UDP():
     def BeginStream(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.sendto(b'\x55', (self.target_addr, 55555))
+        sock.sendto(b'\x57', (self.target_addr, 55555))
 
     def SendCommand(self,bytes):
         if not UDP.sendsock:
@@ -92,6 +93,8 @@ class UDP():
     def EndStream(self):
         if self.target_addr in UDP.frame_queues:
             UDP.frame_queues.pop(self.target_addr)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.sendto(b'\x56', (self.target_addr, 55555))
 
 
 if __name__ == "__main__":

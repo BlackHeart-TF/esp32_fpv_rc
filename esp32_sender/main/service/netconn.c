@@ -25,6 +25,7 @@ void listenThread()
 {
     ESP_LOGI(TAG, "Starting listener loop...");
     camera_conn = netconn_new(NETCONN_UDP);
+    struct netbuf *txbuf = netbuf_new();
     if (camera_conn == NULL)
     {
         ESP_LOGE(TAG, "netconn_new err");
@@ -62,10 +63,19 @@ void listenThread()
                         uint16_t valueY = (uint16_t)(data[3]) | ((uint16_t)(data[4]) << 8);
                         SetServo(valueX ,valueY);
                         break;
+                    
                     case 0x55: //Client Detection
                         temp_addr = *netbuf_fromaddr(rxbuf);
                         temp_port = netbuf_fromport(rxbuf);
-                        ESP_LOGI(TAG, "Got Client: %lx : %d", peer_addr.u_addr.ip4.addr,peer_port);
+                        //ESP_LOGI(TAG, "Got Client: %lx : %d", peer_addr.u_addr.ip4.addr,peer_port);
+                        char addr_str[16]; // Enough to hold an IPv4 address in string format
+                        strcpy(addr_str, ipaddr_ntoa(&temp_addr));
+                        ESP_LOGI(TAG, "Got Client: %s : %d", addr_str,temp_port);
+                        // Test static 
+                        uint8_t num = 0x55;
+                        netbuf_ref(txbuf, &num, 1);
+                        err = netconn_sendto(camera_conn, txbuf, &temp_addr, 55556);
+                        err = netconn_sendto(camera_conn, txbuf, &temp_addr, temp_port);
                         break;
                     case 0x56: //stop stream
                         peer_addr.u_addr.ip4.addr = IPADDR_ANY;

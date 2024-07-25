@@ -96,6 +96,7 @@ esp_err_t init_camera(void)
 
 extern struct netconn *camera_conn;
 extern struct ip_addr peer_addr;
+extern uint16_t peer_port;
 
 static void camera_tx(void *param)
 {
@@ -185,48 +186,5 @@ static void camera_tx(void *param)
 
 void start_camera(void)
 {
-    // camera_conn = netconn_new(NETCONN_UDP);
-    // if (camera_conn == NULL)
-    // {
-    //     ESP_LOGE(TAG, "netconn_new err");
-    //     return;
-    // }
-
-    // err_t err = netconn_bind(camera_conn, IPADDR_ANY, 55555);
-    // if (err != ERR_OK)
-    // {
-    //     ESP_LOGE(TAG, "netconn_bind err %d", err);
-    //     netconn_delete(camera_conn);
-    //     return;
-    // }
-
-    // ESP_LOGI(TAG, "Wait a trigger...");
-    // while (1)
-    // {
-    //     struct netbuf *rxbuf;
-    //     err = netconn_recv(camera_conn, &rxbuf);
-    //     if (err == ERR_OK)
-    //     {
-    //         uint8_t *data;
-    //         u16_t len;
-    //         netbuf_data(rxbuf, (void **)&data, &len);
-    //         if (len)
-    //         {
-    //             ESP_LOGI(TAG, "netconn_recv %d", len);
-    //             if (data[0] == 0x55)
-    //             {
-    //                 peer_addr = *netbuf_fromaddr(rxbuf);
-    //                 ESP_LOGI(TAG, "peer %lx", peer_addr.u_addr.ip4.addr);
-
-    //                 ESP_LOGI(TAG, "Trigged!");
-    //                 netbuf_delete(rxbuf);
-    //                 break;
-    //             }
-    //         }
-    //         netbuf_delete(rxbuf);
-    //     }
-    //     vTaskDelay(pdMS_TO_TICKS(10));
-    // }
-
     xTaskCreatePinnedToCore(&camera_tx, "camera_tx", 4096, NULL, 10, NULL, tskNO_AFFINITY);
 }
