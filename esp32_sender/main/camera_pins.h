@@ -75,6 +75,26 @@
 #define HREF_GPIO_NUM 7
 #define PCLK_GPIO_NUM 13
 
+#elif defined(CONFIG_M5STACK_CORES3)
+#define PWDN_GPIO_NUM -1
+#define RESET_GPIO_NUM -1
+#define XCLK_GPIO_NUM 10
+#define SIOD_GPIO_NUM 12
+#define SIOC_GPIO_NUM 11
+
+#define Y2_GPIO_NUM 39
+#define Y3_GPIO_NUM 40
+#define Y4_GPIO_NUM 41
+#define Y5_GPIO_NUM 42
+#define Y6_GPIO_NUM 15
+#define Y7_GPIO_NUM 16
+#define Y8_GPIO_NUM 31
+#define Y9_GPIO_NUM 32
+
+#define VSYNC_GPIO_NUM 46
+#define HREF_GPIO_NUM 38
+#define PCLK_GPIO_NUM 45
+
 // has ifs on everything so you can override a preset by leaving the rest blank
 #elif defined(CONFIG_CUSTOM_CAMERA_PINS)
 #if defined(CONFIG_PWDN_GPIO_NUM)

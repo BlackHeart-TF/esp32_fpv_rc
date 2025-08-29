@@ -15,6 +15,10 @@ menu "Camera Pin Configuration"
         bool "M5Stack UnitCam S3"
         default y
 
+    config M5STACK_CORES3
+        bool "M5Stack CoreS3"
+        default y
+
     config XIAO_ESP32S3_SENSE
         bool "Xiao ESP32S3 Sense"
         default n

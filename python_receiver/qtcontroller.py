@@ -34,7 +34,7 @@ class QtController(QMainWindow):
         pygame.joystick.init()
         self.joystick_count = pygame.joystick.get_count()
         self.joysticks = [Joystick(x) for x in range(self.joystick_count)]
-        self.previous_input = {}
+        self.previous_joystick = None
 
         self.screentimer = QTimer()
         self.screentimer.timeout.connect(self.new_update_frame)
@@ -44,21 +44,31 @@ class QtController(QMainWindow):
         self.joytimer.timeout.connect(self.updateInput)
         self.joytimer.start(5)  # Update frame every 5 milliseconds
 
+        self.last_input = {}
+
     def showEvent(self,event):
         super().showEvent(event)
         if not self.udp.listening:
             self.udp.Begin()
+
+    
 
     def updateInput(self):
         if not self.joysticks:
             return
         pygame.event.pump()
         for joystick in self.joysticks:
+            name = joystick.get_name()
             current_input = self.get_current_input(joystick)
-
-            # if not self.previous_input or current_input!= self.previous_input:
-            #     self.previous_input = current_input
-            self.send_input(current_input)
+            if (last := self.last_input.get(name)) is None:
+                self.last_input[name] = current_input
+                continue
+            if last != current_input or self.previous_joystick == name:
+                self.previous_joystick = name
+                self.send_input(current_input)
+                self.last_input[name] = current_input
+                break
+                
 
     def get_current_input(self,joystick:Joystick):
         axiscount = joystick.get_numaxes()
@@ -66,7 +76,8 @@ class QtController(QMainWindow):
         #RStickX = joystick.get_axis(3)
         Ltrigger = joystick.get_axis(2)
         Rtrigger = joystick.get_axis(5)
-        
+        name = joystick.get_name();
+
         # Scale the axis values to the range 1000-2000
         LstickX_scaled = int((LstickX + 1) * 500+1000)  # Map -1 to 1 to 1000-2000
     

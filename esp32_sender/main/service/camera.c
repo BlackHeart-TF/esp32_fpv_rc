@@ -30,6 +30,7 @@
 #endif
 
 #include "esp_camera.h"
+#include "img_converters.h"
 #include "camera_pins.h"
 
 static const char *TAG = "camera";
@@ -121,8 +122,28 @@ static void camera_tx(void *param)
             continue;
         }
 
+        // Ensure JPEG output: if sensor doesn't provide JPEG, convert frame to JPEG
         uint8_t *buf = fb->buf;
         size_t total = fb->len;
+        uint8_t *jpg_buf = NULL;
+        size_t jpg_len = 0;
+        bool converted_to_jpeg = false;
+        if (fb->format != PIXFORMAT_JPEG)
+        {
+            if (frame2jpg(fb, /*quality*/ 10, &jpg_buf, &jpg_len))
+            {
+                buf = jpg_buf;
+                total = jpg_len;
+                converted_to_jpeg = true;
+            }
+            else
+            {
+                ESP_LOGE(TAG, "frame2jpg failed");
+                esp_camera_fb_return(fb);
+                vTaskDelay(pdMS_TO_TICKS(10));
+                continue;
+            }
+        }
         size_t send = 0;
 
         // ESP_LOGI(TAG, "send %d", total);
@@ -161,6 +182,10 @@ static void camera_tx(void *param)
         }
 
         esp_camera_fb_return(fb);
+        if (converted_to_jpeg && jpg_buf)
+        {
+            free(jpg_buf);
+        }
 
         if (buf[0] == 0xff && buf[1] == 0xd8 && buf[2] == 0xff)
         {

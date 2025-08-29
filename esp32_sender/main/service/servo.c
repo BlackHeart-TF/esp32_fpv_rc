@@ -70,7 +70,7 @@ void start_servos(void)
 {
     servoRunning = true;
 #if CONFIG_USE_8SERVOS_UNIT
-    servoController = eightServosUnitCreate(I2C_NUM_0,0x25);
+    servoController = eightServosUnitCreate(I2C_NUM_0, CONFIG_SERVO_I2C_ADDR);
     if ((int)servoController <= 0){
         ESP_LOGE(TAG, "Failed to create servo controller: %d",(int)servoController);
         return;

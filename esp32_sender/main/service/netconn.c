@@ -55,12 +55,13 @@ void listenThread()
             netbuf_data(rxbuf, (void **)&data, &len);
             if (len)
             {
-                ESP_LOGI(TAG, "netconn_recv %d", len);
+                ESP_LOGI(TAG, "netconn_recv 0x%02X %d",data[0], len);
                 switch (data[0])
                 {
                     case 0x54: //servo control first for latency
                         uint16_t valueX = (uint16_t)(data[1]) | ((uint16_t)(data[2]) << 8);
                         uint16_t valueY = (uint16_t)(data[3]) | ((uint16_t)(data[4]) << 8);
+                        ESP_LOGI(TAG, "netconn_recv servo %d %d",valueX, valueY);
                         SetServo(valueX ,valueY);
                         break;
                     

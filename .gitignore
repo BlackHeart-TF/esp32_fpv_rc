@@ -2,3 +2,4 @@ build
 sdkconfig
 sdkconfig.old
 __pycache__
+esp32_sernder/managed_components/*

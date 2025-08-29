@@ -121,12 +121,12 @@ EightServosUnit* eightServosUnitCreate(uint8_t port,uint8_t addr) {
     esp_err_t err = i2c_param_config(unit->i2c_num, &conf);
     i2c_driver_install(unit->i2c_num, conf.mode, 0, 0, 0);
     if (err != ESP_OK) {
-        return -1;
+        return NULL;
     }
     //i2c_scan();
     bool found = checkDeviceVersion(unit);
     if (!found) {
-        return -2;
+        return NULL;
     }
     return unit;
 }
