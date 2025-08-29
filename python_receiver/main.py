@@ -28,8 +28,14 @@ class MainWindow(QMainWindow):
         self.qtbutton.clicked.connect(self.open_qt_viewer)
         self.glbutton = QPushButton("GL Viewer")
         self.glbutton.clicked.connect(self.open_gl_viewer)
+        self.yolobutton = QPushButton("YOLO Controller")
+        self.yolobutton.clicked.connect(self.open_yolo_controller)
+        self.drivebutton = QPushButton("Drive Analyzer")
+        self.drivebutton.clicked.connect(self.open_drive_analyzer)
         buttonlayout.addWidget(self.qtbutton)
         buttonlayout.addWidget(self.glbutton)
+        buttonlayout.addWidget(self.yolobutton)
+        buttonlayout.addWidget(self.drivebutton)
 
         self.mlayout.addLayout(toplayout)
         self.mlayout.addWidget(self.listbox)
@@ -59,6 +65,25 @@ class MainWindow(QMainWindow):
             python_interpreter = sys.executable
             command = [python_interpreter, "vrcontroller.py"] + selected_items
             process = subprocess.Popen(command)
+
+    def open_yolo_controller(self):
+        import yolo_controller
+        selected_indexes = self.listbox.selectedIndexes()
+        selected_items = [self.model.data(index, Qt.DisplayRole) for index in selected_indexes]
+        if selected_items:
+            y = yolo_controller.YOLOController(selected_items[0], self)
+            y.setParent(self)
+            y.show()
+
+    def open_drive_analyzer(self):
+        import drive_analyzer
+        selected_indexes = self.listbox.selectedIndexes()
+        selected_items = [self.model.data(index, Qt.DisplayRole) for index in selected_indexes]
+        if selected_items:
+            d = drive_analyzer.DriveAnalyzer(selected_items[0], self)
+            d.setParent(self)
+            d.show()
+            
 
 
     def update_gamepad_status(self):

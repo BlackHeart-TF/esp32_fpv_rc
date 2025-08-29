@@ -3,3 +3,4 @@ pyopengl
 pygame
 numpy
 opencv-python
+ultralytics
